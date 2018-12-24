@@ -47,7 +47,7 @@ describe('listDiff', () => {
   it('should execute list diff', () => {
     // 随机生成10000个数组, 随机制作10000个数组的拷贝，进行diff
     // 用数量战胜测试覆盖率
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 1; i++) {
       const l1 = generateList()
       const l2 = shuffle(l1)
     
