@@ -1,0 +1,33 @@
+{
+  "name": "pray",
+  "version": "0.0.0",
+  "description": "pray",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjhch123/pray.git"
+  },
+  "keywords": [
+    "bundle"
+  ],
+  "author": "zjhch123<416836508@qq.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zjhch123/pray/issues"
+  },
+  "homepage": "https://github.com/zjhch123/pray",
+  "devDependencies": {
+    "autoprefixer": "^9.4.3",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.6.0",
+    "rollup": "^0.68.2",
+    "rollup-plugin-alias": "^1.5.1",
+    "rollup-plugin-babel": "^4.1.0",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-eslint": "^5.0.0",
+    "rollup-plugin-node-resolve": "^4.0.0"
+  }
+}
