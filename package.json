@@ -4,7 +4,8 @@
   "description": "pray",
   "main": "./src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "co": "jest --coverage"
   },
   "repository": {
     "type": "git",

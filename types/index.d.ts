@@ -14,5 +14,6 @@ declare module "patch" {
   export namespace PATCHES {
     const REPLACE: Symbol
     const TEXT: Symbol
+    const PROPS: Symbol
   }
 }

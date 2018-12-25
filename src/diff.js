@@ -34,7 +34,7 @@ function dfsWalk(oldNode, newNode, index, patches) {
       })
     } else { // tag相同, 对比 props 和 children
       diffAttrs(oldNode.props, newNode.props, currentNodePatches) // 对比props
-      diffChildren(oldNode.children, newNode.children, currentNodePatches) // 对比children
+      diffChildren(oldNode.children, newNode.children, currentNodePatches, patches) // 对比children
     }
   } else {
     // 如果类型不同
@@ -58,10 +58,43 @@ function dfsWalk(oldNode, newNode, index, patches) {
   }
 }
 
+/**
+ * @param {object} oldProps 
+ * @param {object} newProps 
+ * @param {array} currentNodePatches 
+ */
 function diffAttrs(oldProps, newProps, currentNodePatches) {
+  const diffResult = {}
+  let count = 0
 
+  for (let key in oldProps) {
+    if (oldProps[key] !== newProps[key]) {
+      diffResult[key] = newProps[key]
+      count += 1
+    }
+  }
+
+  for (let key in newProps) {
+    if (typeof oldProps[key] === 'undefined') {
+      diffResult[key] = newProps[key]
+      count += 1
+    }
+  }
+
+  if (count > 0) {
+    currentNodePatches.push({
+      type: PATCHES.PROPS,
+      item: diffResult
+    })
+  }
 }
 
-function diffChildren(oldChildren, newChildren, currentNodePatches) {
-
+/**
+ * @param {[VNode]} oldChildren 
+ * @param {[VNode]} newChildren 
+ * @param {array} currentNodePatches 
+ * @param {array} patches 
+ */
+function diffChildren(oldChildren, newChildren, currentNodePatches, patches) {
+  
 }
