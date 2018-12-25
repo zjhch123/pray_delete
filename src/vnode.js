@@ -1,5 +1,8 @@
 import _ from './utils'
 
+/**
+ * @class VNode
+ */
 class VNode {
   constructor(type, props, children) {
     this.type = type
@@ -40,6 +43,12 @@ class VNode {
   }
 }
 
-export default (type, props, ...children) => {
+/**
+ * @param {string} type 
+ * @param {object} props 
+ * @param  {array} children 
+ * @return {VNode}
+ */
+export default function (type, props, ...children) {
   return new VNode(type, props, children)
 }

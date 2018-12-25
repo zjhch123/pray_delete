@@ -1,3 +1,5 @@
+const optc = (o) => Object.prototype.toString.call(o)
+
 export default {
   each(arrayLike, cb) {
     for (let i = 0; i < arrayLike.length; i++) {
@@ -22,5 +24,9 @@ export default {
         el.setAttribute(propName, propValue)
         break
     }
+  },
+  isNumberOrString(obj) {
+    const type = optc(obj)
+    return type === '[object Number]' || type === ['object String']
   }
 }
