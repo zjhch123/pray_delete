@@ -1,15 +1,18 @@
 import _ from './utils'
+import { VNode } from './vnode'
 import { PATCHES } from './patch'
-import listDiff from './listDiff'
+import listDiff, { getKeyIndexAndNoKeyItem } from './listDiff'
 
 /**
  * @param {VNode} oldTree 
  * @param {VNode} newTree 
  */
 export default function (oldTree, newTree) {
-  const patches = []
+  const patches = {}
   let index = 0
-  return dfsWalk(oldTree, newTree, index, patches)
+  dfsWalk(oldTree, newTree, index, patches)
+
+  return patches
 }
 
 /**
@@ -22,11 +25,18 @@ export default function (oldTree, newTree) {
 function dfsWalk(oldNode, newNode, index, patches) {
   const currentNodePatches = []
 
-  if (oldNode instanceof VNode && newNode instanceof VNode) {
+  if (newNode === null) {
+    // TODO ?
+  } else if (_.isNumberOrString(oldNode) && _.isNumberOrString(newNode)) { // 如果都是简单类型
+    if (oldNode != newNode) { // 那就进行简单的判断
+      currentNodePatches.push({
+        type: PATCHES.TEXT,
+        item: newNode
+      })
+    }
+  } else if (oldNode instanceof VNode && newNode instanceof VNode) {
     // 如果都是虚拟DOM
-    const oldTag = oldNode.type
-    const newTag = oldNode.type
-    if (oldTag !== newTag) { // tag不同
+    if (!oldNode.compare(newNode)) { // 浅比较不同
       currentNodePatches.push({
         type: PATCHES.REPLACE,
         index,
@@ -34,23 +44,14 @@ function dfsWalk(oldNode, newNode, index, patches) {
       })
     } else { // tag相同, 对比 props 和 children
       diffAttrs(oldNode.props, newNode.props, currentNodePatches) // 对比props
-      diffChildren(oldNode.children, newNode.children, currentNodePatches, patches) // 对比children
+      diffChildren(oldNode.children, newNode.children, index, currentNodePatches, patches) // 对比children
     }
   } else {
-    // 如果类型不同
-    if (_.isNumberOrString(oldNode) && _.isNumberOrString(newNode)) { // 如果都是简单类型
-      if (oldNode != newNode) { // 那就进行简单的判断
-        currentNodePatches.push({
-          type: PATCHES.TEXT,
-          item: newNode
-        })
-      }
-    } else { // 如果不都是简单类型，那就不做太多操作，直接替换
-      currentNodePatches.push({
-        type: PATCHES.REPLACE,
-        item: newNode
-      })
-    }
+    // 这么复杂？直接替换
+    currentNodePatches.push({
+      type: PATCHES.REPLACE,
+      item: newNode
+    })
   }
 
   if (currentNodePatches.length > 0) {
@@ -95,6 +96,37 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
  * @param {array} currentNodePatches 
  * @param {array} patches 
  */
-function diffChildren(oldChildren, newChildren, currentNodePatches, patches) {
-  
+function diffChildren(oldChildren, newChildren, index, currentNodePatches, patches) {
+  const moves = listDiff(oldChildren, newChildren, 'key')
+
+  if (moves.length !== 0) {
+    currentNodePatches.push({
+      type: PATCHES.REORDER,
+      moves
+    })
+  }
+
+  let leftNode = null
+  let currentNodeIndex = index
+
+  const newChildrenKeyIndex = getKeyIndexAndNoKeyItem(newChildren, 'key').keyIndex
+  const newChildrenFiltered = []
+
+  for (let i = 0; i < oldChildren.length; i++) { // 筛选出需要比较的
+    const item = oldChildren[i]
+    const itemKey = item.key
+    if (typeof itemKey !== 'undefined' && newChildrenKeyIndex.hasOwnProperty(itemKey)) {
+      newChildrenFiltered.push(newChildren[newChildrenKeyIndex[itemKey]])
+    } else {
+      newChildrenFiltered.push(null)
+    }
+  }
+
+  _.each(oldChildren, function(index, node) {
+    currentNodeIndex = (leftNode && leftNode.count )
+      ? leftNode.count + currentNodeIndex + 1
+      : currentNodeIndex + 1
+    leftNode = node
+    dfsWalk(node, newChildrenFiltered[index], index, patches)
+  })
 }

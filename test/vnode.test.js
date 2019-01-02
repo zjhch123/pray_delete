@@ -48,19 +48,19 @@ describe('vnode', () => {
         case 1: 
           expect(element.type).toBe('h1'); 
           expect(element.props.style).toBe('font-size: 12px'); 
-          expect(element.children[0]).toBe('hahaha'); 
+          expect(element.children[0].props.text).toBe('hahaha'); 
           count += 1;
           break;
         case 3: 
           expect(element.type).toBe('p'); 
-          expect(element.children[0]).toBe('lalala');
+          expect(element.children[0].props.text).toBe('lalala');
           count += 1;
           break
         case 5: expect(element.type).toBe('div'); count += 1; break
         case 6: expect(element.type).toBe('div'); count += 1; break
         case 7: 
           expect(element.type).toBe('span'); 
-          expect(element.children[0]).toBe('bobo');
+          expect(element.children[0].props.text).toBe('bobo');
           count += 1;
           break
         case 9: expect(element.type).toBe('img'); expect(element.props.src).toBe('http://xxx.png'); count += 1; break
@@ -130,5 +130,15 @@ describe('vnode', () => {
       }
     })
     expect(count).toBe(10) // 确保经过了每一个分支
+  })
+
+  it('can compare', () => {
+    const a = v('div', {key: 1})
+    const b = v('div', {key: 1})
+    const c = v('div', {key: 2})
+    const d = v('img', {key: 1})
+    expect(a.compare(b)).toBeTruthy()
+    expect(a.compare(c)).not.toBeTruthy()
+    expect(a.compare(d)).not.toBeTruthy()
   })
 })

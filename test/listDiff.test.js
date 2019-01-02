@@ -34,7 +34,7 @@ function generateList() {
 
   for (let i = 0; i < length; i++) {
     if (Math.random() > 0.5) {
-      ret.push({id: i})
+      ret.push({key: i})
     } else {
       ret.push({type: Math.random().toString(36).substring(2)})
     }
@@ -47,12 +47,11 @@ describe('listDiff', () => {
   it('should execute list diff', () => {
     // 随机生成1000个数组, 随机制作1000个数组的拷贝，进行diff
     // 用数量战胜测试覆盖率
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       const l1 = generateList()
       const l2 = shuffle(l1)
-    
-      const ret = listDiff(l1, l2, 'id')
-    
+      const ret = listDiff(l1, l2, 'key')
+
       ret.forEach(result => {
         switch (result.type) {
           case 0: // 删除

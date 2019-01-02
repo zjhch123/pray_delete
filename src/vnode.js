@@ -3,25 +3,32 @@ import _ from './utils'
 /**
  * @class VNode
  */
-class VNode {
+export class VNode {
   constructor(type, props, children) {
     this.type = type
     this.props = props === null ? {} : props
-    this.children = children
+    this.children = children || []
 
     this.count = 0
+
+    this.key = this.props.key // 用于diff
 
     _.each(this.children, (index, item) => {
       if (item instanceof VNode) {
         this.count += item.count
       } else {
-        this.children[index] = '' + item
+        this.children[index] = new VNode('text', { key: `@key_textNode_${this.count}_${index}_${item}`, text: item })
       }
       this.count += 1
     })
   }
 
   render() {
+    if (this.type === 'text') {
+      const el = document.createTextNode(this.props.text)
+      return el
+    }
+
     const el = document.createElement(this.type)
     const props = this.props
 
@@ -32,14 +39,18 @@ class VNode {
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i]
-      if (child instanceof VNode) {
-        el.appendChild(child.render())
-      } else {
-        el.appendChild(document.createTextNode(child))
-      }
+      el.appendChild(child.render())
     }
 
     return el
+  }
+
+  /**
+   * 只比较type和key是否相等
+   * @param {VNode} otherNode 
+   */
+  compare(otherNode) {
+    return otherNode instanceof VNode ? otherNode.type === this.type && otherNode.key === this.key : false
   }
 }
 

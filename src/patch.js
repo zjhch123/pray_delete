@@ -1,7 +1,8 @@
 const PATCHES = {
-  REPLACE: Symbol(),
-  TEXT: Symbol(),
-  PROPS: Symbol(),
+  REPLACE: Symbol('replace'),
+  TEXT: Symbol('text'),
+  PROPS: Symbol('props'),
+  REORDER: Symbol('reorder'),
 }
 
 export { PATCHES }

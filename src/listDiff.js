@@ -3,7 +3,7 @@
  * @param {object} item 
  * @param {string|function} key 
  */
-function getValueByKey(item, key) {
+export function getValueByKey(item, key) {
   if (!item || !key) { return undefined }
   return typeof key === 'string' ? item[key] : key(item)
 }
@@ -17,7 +17,7 @@ function getValueByKey(item, key) {
  * @param {string|function} key 
  * @return {object} { keyIndex: {}, noKeyItem: [] }
  */
-function getKeyIndexAndNoKeyItem(list, key = 'id') {
+export function getKeyIndexAndNoKeyItem(list, key = 'id') {
   const keyIndex = {}
   const noKeyItem = []
 
@@ -43,7 +43,7 @@ function getKeyIndexAndNoKeyItem(list, key = 'id') {
  * @param {array} oldList 老数组
  * @param {array} newList 新数组
  * @param {string|function} key 数组内项的id
- * @return {object} 返回数组操作集合, 凭借此集合可将老数组转化为新数组
+ * @return {[object]} 返回数组操作集合, 凭借此集合可将老数组转化为新数组
  *         - type = 0, remove
  *         - type = 1, insert
  */

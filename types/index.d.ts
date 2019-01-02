@@ -4,6 +4,7 @@ declare class VNode {
   props: object
   children: []
   render(): HTMLElement
+  compare(otherNode:VNode): boolean
 }
 
 declare module "vnode" {
@@ -15,5 +16,6 @@ declare module "patch" {
     const REPLACE: Symbol
     const TEXT: Symbol
     const PROPS: Symbol
+    const REORDER: Symbol
   }
 }

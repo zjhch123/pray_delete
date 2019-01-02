@@ -21,7 +21,6 @@
   },
   "homepage": "https://github.com/zjhch123/pray",
   "devDependencies": {
-    "autoprefixer": "^9.4.3",
     "babel-preset-env": "^1.7.0",
     "jest": "^23.6.0",
     "rollup": "^0.68.2",
