@@ -48,29 +48,43 @@ export function getKeyIndexAndNoKeyItem(list, key = 'id') {
  *         - type = 1, insert
  */
 export default function listDiff(oldList, newList, key = 'id') {
+  const oldMap = getKeyIndexAndNoKeyItem(oldList, key)
   const newMap = getKeyIndexAndNoKeyItem(newList, key)
+
+  const oldKeyIndex = oldMap.keyIndex
   const newKeyIndex = newMap.keyIndex
+  const newNoKey = newMap.noKeyItem
 
   const moves = []
   const oldCopy = []
 
+  let children = []
   let i = 0
+  let noKeyIndex = 0
 
   for (i = 0; i < oldList.length; i++) {
     const item = oldList[i]
     const itemKey = getValueByKey(item, key)
-    if (!itemKey || !newKeyIndex.hasOwnProperty(itemKey)) {
-      oldCopy.push(null)
+    if (typeof itemKey !== 'undefined' && itemKey !== null) {
+      // itemkey 存在
+      if (!newKeyIndex.hasOwnProperty(itemKey)) {
+        oldCopy.push(null)
+      } else {
+        const newItemIndex = newList[newKeyIndex[itemKey]]
+        oldCopy.push(newList[newItemIndex])
+      }
     } else {
-      oldCopy.push(item)
+      // itemKey 不存在
+      oldCopy.push(newNoKey[noKeyIndex ++] || null)
     }
   }
+
+  children = oldCopy.slice(0)
 
   i = 0
 
   while (i < oldCopy.length) {
-    const item = oldCopy[i]
-    if (item === null) {
+    if (oldCopy[i] === null) {
       remove(i)
       removeOldCopy(i)
     } else {
@@ -83,26 +97,24 @@ export default function listDiff(oldList, newList, key = 'id') {
   while (i < newList.length) {
     const newItem = newList[i]
     const newItemKey = getValueByKey(newItem, key)
-    
-    if (!newItemKey) {
-      insert(i, newItem)
-      i += 1
-      continue
-    }
-
     const oldItem = oldCopy[j]
     const oldItemKey = getValueByKey(oldItem, key)
+
     if (oldItem) { // 如果老的项存在
       if (oldItemKey === newItemKey) { // 如果正好key值相等
         j += 1
       } else { // key值不相等
-        const oldNextItemKey = getValueByKey(oldCopy[j + 1], key)
-        if (oldNextItemKey === newItemKey) {
-          remove(i)
-          removeOldCopy(j)
-          j += 1
+        if (!oldKeyIndex.hasOwnProperty(newItemKey)) { // 如果新的key在老数组中不存在
+          insert(i, newItem) // 直接插入
         } else {
-          insert(i, newItem)
+          const oldNextItemKey = getValueByKey(oldCopy[j + 1], key)
+          if (oldNextItemKey === newItemKey) {
+            remove(i)
+            removeOldCopy(j)
+            j += 1
+          } else {
+            insert(i, newItem)
+          }
         }
       }
     } else { // 如果老的项不存在, 直接插入
@@ -129,5 +141,8 @@ export default function listDiff(oldList, newList, key = 'id') {
     moves.push({ type: 1, index, item })
   }
 
-  return moves
+  return {
+    moves,
+    children
+  }
 }

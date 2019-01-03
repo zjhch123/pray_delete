@@ -27,6 +27,6 @@ export default {
   },
   isNumberOrString(obj) {
     const type = optc(obj)
-    return type === '[object Number]' || type === ['object String']
+    return type === '[object Number]' || type === '[object String]'
   }
 }

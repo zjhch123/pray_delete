@@ -97,7 +97,10 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
  * @param {array} patches 
  */
 function diffChildren(oldChildren, newChildren, index, currentNodePatches, patches) {
-  const moves = listDiff(oldChildren, newChildren, 'key')
+  const {
+    moves,
+    children,
+  } = listDiff(oldChildren, newChildren, 'key')
 
   if (moves.length !== 0) {
     currentNodePatches.push({
@@ -109,24 +112,17 @@ function diffChildren(oldChildren, newChildren, index, currentNodePatches, patch
   let leftNode = null
   let currentNodeIndex = index
 
-  const newChildrenKeyIndex = getKeyIndexAndNoKeyItem(newChildren, 'key').keyIndex
-  const newChildrenFiltered = []
+  newChildren = children
 
-  for (let i = 0; i < oldChildren.length; i++) { // 筛选出需要比较的
-    const item = oldChildren[i]
-    const itemKey = item.key
-    if (typeof itemKey !== 'undefined' && newChildrenKeyIndex.hasOwnProperty(itemKey)) {
-      newChildrenFiltered.push(newChildren[newChildrenKeyIndex[itemKey]])
-    } else {
-      newChildrenFiltered.push(null)
-    }
-  }
+  _.each(oldChildren, function(index, child) {
+    const newChild = newChildren[index]
 
-  _.each(oldChildren, function(index, node) {
     currentNodeIndex = (leftNode && leftNode.count )
       ? leftNode.count + currentNodeIndex + 1
       : currentNodeIndex + 1
-    leftNode = node
-    dfsWalk(node, newChildrenFiltered[index], index, patches)
+
+    leftNode = child
+
+    dfsWalk(child, newChild, currentNodeIndex, patches)
   })
 }

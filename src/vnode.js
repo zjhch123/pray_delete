@@ -17,18 +17,13 @@ export class VNode {
       if (item instanceof VNode) {
         this.count += item.count
       } else {
-        this.children[index] = new VNode('text', { key: `@key_textNode_${this.count}_${index}_${item}`, text: item })
+        this.children[index] = '' + item
       }
       this.count += 1
     })
   }
 
   render() {
-    if (this.type === 'text') {
-      const el = document.createTextNode(this.props.text)
-      return el
-    }
-
     const el = document.createElement(this.type)
     const props = this.props
 
@@ -39,7 +34,13 @@ export class VNode {
 
     for (let i = 0; i < this.children.length; i++) {
       const child = this.children[i]
-      el.appendChild(child.render())
+      if (child instanceof VNode) {
+        el.appendChild(child.render())
+      } else {
+        el.appendChild(
+          document.createTextNode(child)
+        )
+      }
     }
 
     return el
