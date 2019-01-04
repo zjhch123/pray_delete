@@ -17,5 +17,6 @@ declare module "patch" {
     const TEXT: Symbol
     const PROPS: Symbol
     const REORDER: Symbol
+    const MOVE: Symbol
   }
 }

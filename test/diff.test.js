@@ -30,4 +30,24 @@ describe('diff!', () => {
     expect(result[1][0].type).toBe(PATCHES.PROPS)
     expect(result[1][0].item).toEqual({style: 'display: block', src: 'http://www.google.com'})
   })
+
+  it('can diff3', () => {
+    const n1 = v('div', null, 
+      v('p', { key: 0 }, '0'),
+      v('p', { key: 1 }, '1'),
+    )
+    const n2 = v('div', null, 
+      v('p', { key: 5 }, '5'),
+      v('p', { key: 1 }, '1'),
+    )
+
+
+    const result = diff(n1, n2)
+    console.log(result)
+    console.log(result[0][0])
+    console.log(result[3])
+
+    // expect(result[1][0].type).toBe(PATCHES.PROPS)
+    // expect(result[1][0].item).toEqual({style: 'display: block', src: 'http://www.google.com'})
+  })
 })

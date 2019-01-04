@@ -3,6 +3,7 @@ const PATCHES = {
   TEXT: Symbol('text'),
   PROPS: Symbol('props'),
   REORDER: Symbol('reorder'),
+  MOVE: Symbol('move'),
 }
 
 export { PATCHES }
