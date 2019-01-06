@@ -104,7 +104,7 @@ describe('listDiff2', () => {
 
     const ret = listDiff2(a, b, (item) => item)
 
-    expect(ret.children).toEqual([null, 1, null, 3, 4, 5, 6, null, 8, 9])
+    expect(ret.children).toEqual([0, 1, null, 3, 4, 5, 6, null, 8, 9])
 
     const moves = ret.moves
     transfer(a, moves)

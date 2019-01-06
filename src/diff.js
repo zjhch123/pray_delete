@@ -1,7 +1,7 @@
 import _ from './utils'
 import { VNode } from './vnode'
 import { PATCHES } from './patch'
-import listDiff, { getKeyIndexAndNoKeyItem } from './listDiff'
+import listDiff from './listDiff2'
 
 /**
  * @param {VNode} oldTree 

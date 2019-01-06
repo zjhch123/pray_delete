@@ -41,13 +41,7 @@ describe('diff!', () => {
       v('p', { key: 1 }, '1'),
     )
 
-
     const result = diff(n1, n2)
-    console.log(result)
-    console.log(result[0][0])
-    console.log(result[3])
-
-    // expect(result[1][0].type).toBe(PATCHES.PROPS)
-    // expect(result[1][0].item).toEqual({style: 'display: block', src: 'http://www.google.com'})
+    expect(result[0][0].type).toBe(PATCHES.REORDER)
   })
 })

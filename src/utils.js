@@ -28,5 +28,8 @@ export default {
   isNumberOrString(obj) {
     const type = optc(obj)
     return type === '[object Number]' || type === '[object String]'
+  },
+  isNotNull(a) {
+    return typeof a !== 'undefined' && a !== null
   }
 }

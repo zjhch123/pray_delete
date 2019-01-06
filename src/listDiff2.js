@@ -1,3 +1,5 @@
+import _ from './utils'
+
 /**
  * 传入一个item(object)和key, 获取 item 内 key 对应的 value
  * @param {Object} item 
@@ -5,7 +7,7 @@
  * @return {any} value
  */
 function getValueByKey(item, key) {
-  if (!item || !key) { return undefined }
+  if (!_.isNotNull(item) || !_.isNotNull(key)) { return undefined }
   return typeof key === 'string' ? item[key] : key(item)
 }
 
@@ -28,7 +30,7 @@ function getKeyIndexAndNoKeyItem(list, key = 'id') {
     const item = list[i]
     const itemKey = getValueByKey(item, key)
 
-    if (!!itemKey) {
+    if (_.isNotNull(itemKey)) {
       keyIndex[itemKey] = i
     } else {
       noKeyItem.push(item)
@@ -60,7 +62,7 @@ function listDiff(oldArray, newArray, key = 'id') {
     const oldItem = oldArray[i]
     const oldItemKey = getValueByKey(oldItem, key)
 
-    if (oldItemKey) {
+    if (_.isNotNull(oldItemKey)) {
       if (newKeyIndex.hasOwnProperty(oldItemKey)) {
         const newItemIndex = newKeyIndex[oldItemKey]
         children.push(newArray[newItemIndex])
@@ -97,7 +99,7 @@ function listDiff(oldArray, newArray, key = 'id') {
     const oldItem = simulate[i]
     const oldItemKey = getValueByKey(oldItem, key)
 
-    if (typeof oldItem !== 'undefined' && oldItem !== null) {
+    if (_.isNotNull(oldItem)) {
       if (oldItemKey === newItemKey) {
         i += 1
       } else {
