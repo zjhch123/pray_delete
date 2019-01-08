@@ -25,6 +25,12 @@ export default {
         } 
         el.setAttribute('value', propValue)
         break
+      case 'className':
+        el.setAttribute('class', propValue)
+        break
+      case 'key':
+        el.setAttribute('data-pray-key', propValue)
+        break
       default:
         el.setAttribute(propName, propValue)
         break
@@ -36,5 +42,10 @@ export default {
   },
   isNotNull(a) {
     return typeof a !== 'undefined' && a !== null
+  },
+  flatArr(arr) {
+    return arr.reduce((prev, next) => {
+      return prev.concat(Array.isArray(next) ? this.flatArr(next) : next)
+    }, [])
   }
 }

@@ -5,6 +5,7 @@ import _ from './utils'
  */
 export class VNode {
   constructor(type, props, children) {
+    console.log(children.slice(0))
     this.type = type
     this.props = props === null ? {} : props
     this.children = children || []
@@ -62,5 +63,5 @@ export class VNode {
  * @return {VNode}
  */
 export default function (type, props, ...children) {
-  return new VNode(type, props, children)
+  return new VNode(type, props, _.flatArr(children))
 }
