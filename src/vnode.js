@@ -5,7 +5,6 @@ import _ from './utils'
  */
 export class VNode {
   constructor(type, props, children) {
-    console.log(children.slice(0))
     this.type = type
     this.props = props === null ? {} : props
     this.children = children || []
