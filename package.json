@@ -1,9 +1,10 @@
 {
   "name": "pray",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "pray",
-  "main": "./src/index.js",
+  "main": "index.js",
   "scripts": {
+    "build": "rollup -c config/rollup.config.js",
     "test": "jest",
     "co": "jest --coverage"
   },
@@ -21,13 +22,12 @@
   },
   "homepage": "https://github.com/zjhch123/pray",
   "devDependencies": {
-    "babel-preset-env": "^1.7.0",
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
     "jest": "^23.6.0",
     "rollup": "^0.68.2",
     "rollup-plugin-alias": "^1.5.1",
-    "rollup-plugin-babel": "^4.1.0",
-    "rollup-plugin-commonjs": "^9.2.0",
-    "rollup-plugin-eslint": "^5.0.0",
-    "rollup-plugin-node-resolve": "^4.0.0"
+    "rollup-plugin-babel": "^4.2.0",
+    "rollup-plugin-eslint": "^5.0.0"
   }
 }
