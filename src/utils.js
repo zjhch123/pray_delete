@@ -1,6 +1,11 @@
 const optc = (o) => Object.prototype.toString.call(o)
 
 export default {
+  /**
+   * 
+   * @param {Array} arrayLike 
+   * @param {(index, node) -> void} cb 
+   */
   each(arrayLike, cb) {
     for (let i = 0; i < arrayLike.length; i++) {
       if (!!cb(i, arrayLike[i], arrayLike)) {

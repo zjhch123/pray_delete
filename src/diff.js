@@ -68,6 +68,7 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
   const diffResult = {}
   let count = 0
 
+  // 查找修改、删除
   for (let key in oldProps) {
     if (oldProps[key] !== newProps[key]) {
       diffResult[key] = newProps[key]
@@ -75,8 +76,9 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
     }
   }
 
+  // 查找新增
   for (let key in newProps) {
-    if (typeof oldProps[key] === 'undefined') {
+    if (!oldProps.hasOwnProperty(key)) {
       diffResult[key] = newProps[key]
       count += 1
     }
