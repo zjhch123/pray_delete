@@ -1,7 +1,9 @@
-import vnode from './src/vnode'
 import diff from './src/diff'
 import patch from './src/patch'
+import vnode from './element'
 
 export {
-  vnode, diff, patch
+  diff, 
+  patch, 
+  vnode
 }

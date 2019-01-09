@@ -49,7 +49,6 @@ function listDiff(oldArray, newArray, key = 'id') {
   
   const newKeyIndex = newMap.keyIndex
   const newNoKeyItem = newMap.noKeyItem
-
   const moves = []
   const children = []
 
@@ -75,7 +74,6 @@ function listDiff(oldArray, newArray, key = 'id') {
   }
 
   const simulate = children.slice(0)
-
   i = 0
 
   // 删除不存在的项
@@ -91,7 +89,7 @@ function listDiff(oldArray, newArray, key = 'id') {
   let j = i = 0 // j指向新数组, i指向老数组
   let offset = 0 // 偏移量, insert之后有用
 
-  const simulateKeyIndex = getKeyIndexAndNoKeyItem(simulate).keyIndex
+  const simulateKeyIndex = getKeyIndexAndNoKeyItem(simulate, key).keyIndex
 
   while (j < newArray.length) {
     const newItem = newArray[j]

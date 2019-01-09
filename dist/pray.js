@@ -1,42 +1,8 @@
-var pray = (function (exports) {
-  'use strict';
-
-  function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-      throw new TypeError("Cannot call a class as a function");
-    }
-  }
-
-  function _defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      Object.defineProperty(target, descriptor.key, descriptor);
-    }
-  }
-
-  function _createClass(Constructor, protoProps, staticProps) {
-    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) _defineProperties(Constructor, staticProps);
-    return Constructor;
-  }
-
-  function _defineProperty(obj, key, value) {
-    if (key in obj) {
-      Object.defineProperty(obj, key, {
-        value: value,
-        enumerable: true,
-        configurable: true,
-        writable: true
-      });
-    } else {
-      obj[key] = value;
-    }
-
-    return obj;
-  }
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+  typeof define === 'function' && define.amd ? define(['exports'], factory) :
+  (global = global || self, factory(global.pray = {}));
+}(this, function (exports) { 'use strict';
 
   var optc = function optc(o) {
     return Object.prototype.toString.call(o);
@@ -60,16 +26,19 @@ var pray = (function (exports) {
         case 'style':
           el.style.cssText = propValue;
           break;
-
         case 'value':
           if (el.tagName === 'input' || el.tagName === 'textarea') {
             el.value = propValue;
             break;
           }
-
           el.setAttribute('value', propValue);
           break;
-
+        case 'className':
+          el.setAttribute('class', propValue);
+          break;
+        case 'key':
+          el.setAttribute('data-pray-key', propValue);
+          break;
         default:
           el.setAttribute(propName, propValue);
           break;
@@ -81,16 +50,24 @@ var pray = (function (exports) {
     },
     isNotNull: function isNotNull(a) {
       return typeof a !== 'undefined' && a !== null;
+    },
+    flatArr: function flatArr(arr) {
+      var _this = this;
+
+      return arr.reduce(function (prev, next) {
+        return prev.concat(Array.isArray(next) ? _this.flatArr(next) : next);
+      }, []);
     }
   };
+
+  var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+  function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
   /**
    * @class VNode
    */
-
-  var VNode =
-  /*#__PURE__*/
-  function () {
+  var VNode = function () {
     function VNode(type, props, children) {
       var _this = this;
 
@@ -99,7 +76,9 @@ var pray = (function (exports) {
       this.type = type;
       this.props = props === null ? {} : props;
       this.children = children || [];
+
       this.count = 0;
+
       this.key = this.props.key; // 用于diff
 
       _.each(this.children, function (index, item) {
@@ -108,26 +87,23 @@ var pray = (function (exports) {
         } else {
           _this.children[index] = '' + item;
         }
-
         _this.count += 1;
       });
     }
 
     _createClass(VNode, [{
-      key: "render",
+      key: 'render',
       value: function render() {
         var el = document.createElement(this.type);
         var props = this.props;
 
         for (var propName in props) {
           var propValue = props[propName];
-
           _.setAttr(el, propName, propValue);
         }
 
         for (var i = 0; i < this.children.length; i++) {
           var child = this.children[i];
-
           if (child instanceof VNode) {
             el.appendChild(child.render());
           } else {
@@ -137,13 +113,14 @@ var pray = (function (exports) {
 
         return el;
       }
+
       /**
        * 只比较type和key是否相等
        * @param {VNode} otherNode 
        */
 
     }, {
-      key: "compare",
+      key: 'compare',
       value: function compare(otherNode) {
         return otherNode instanceof VNode ? otherNode.type === this.type && otherNode.key === this.key : false;
       }
@@ -151,19 +128,19 @@ var pray = (function (exports) {
 
     return VNode;
   }();
+
   /**
    * @param {string} type 
    * @param {object} props 
    * @param  {array} children 
    * @return {VNode}
    */
-
-  function vnode (type, props) {
-    for (var _len = arguments.length, children = new Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+  function vnode(type, props) {
+    for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
       children[_key - 2] = arguments[_key];
     }
 
-    return new VNode(type, props, children);
+    return new VNode(type, props, _.flatArr(children));
   }
 
   var PATCHES = {
@@ -173,14 +150,15 @@ var pray = (function (exports) {
     REORDER: Symbol('reorder')
   };
 
-  function dfs(node, patches, index) {
-    var currentPatches = patches[index];
+  function dfs(node, patches, walker) {
+    var currentPatches = patches[walker.index];
+
     var len = node.childNodes ? node.childNodes.length : 0;
 
     for (var i = 0; i < len; i++) {
       var child = node.childNodes[i];
-      index += 1;
-      dfs(child, patches, index);
+      walker.index += 1;
+      dfs(child, patches, walker);
     }
 
     if (currentPatches) {
@@ -194,12 +172,10 @@ var pray = (function (exports) {
         case PATCHES.REORDER:
           reorder(node, patch.moves);
           break;
-
         case PATCHES.REPLACE:
           var newNode = typeof patch.item === 'string' ? document.createTextNode(patch.item) : patch.item.render();
           node.parentNode.replaceChild(newNode, node);
           break;
-
         case PATCHES.TEXT:
           if (node.textContent) {
             // 性能更好
@@ -207,9 +183,7 @@ var pray = (function (exports) {
           } else {
             node.nodeValue = patch.item;
           }
-
           break;
-
         case PATCHES.PROPS:
           setProps(node, patch.item);
           break;
@@ -236,17 +210,16 @@ var pray = (function (exports) {
           // remove
           node.removeChild(node.childNodes[index]);
           break;
-
         case 1:
           // insert
           var insertNode = typeof move.item === 'string' ? document.createTextNode(move.item) : move.item.render();
           node.insertBefore(insertNode, node.childNodes[index] || null);
           break;
-
         case 2:
           // swap
           var from = move.from,
               to = move.to;
+
           var children = node.childNodes;
           node.insertBefore(children[from], children[to]);
           node.insertBefore(children[to], children[from]);
@@ -256,9 +229,11 @@ var pray = (function (exports) {
   }
 
   function patch(node, patches) {
-    var index = 0;
-    dfs(node, patches, index);
+    var walker = { index: 0 };
+    dfs(node, patches, walker);
   }
+
+  function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
   /**
    * 传入一个item(object)和key, 获取 item 内 key 对应的 value
@@ -266,14 +241,13 @@ var pray = (function (exports) {
    * @param {String|Function} key 
    * @return {any} value
    */
-
   function getValueByKey(item, key) {
     if (!_.isNotNull(item) || !_.isNotNull(key)) {
       return undefined;
     }
-
     return typeof key === 'string' ? item[key] : key(item);
   }
+
   /**
    * 传入 ([{id: 4},{id: 2},{id: 1},{id: 3}, {item: 5}], 'id')
    * 返回 {keyIndex: {4: 0, 1: 2, 2: 1, 3: 3}, noKeyItem: [{item: 5}]}
@@ -285,10 +259,9 @@ var pray = (function (exports) {
    *            - keyIndex: Object
    *            - noKeyItem: Array
    */
-
-
   function getKeyIndexAndNoKeyItem(list) {
     var key = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'id';
+
     var keyIndex = {};
     var noKeyItem = [];
 
@@ -305,21 +278,24 @@ var pray = (function (exports) {
 
     return _defineProperty({
       keyIndex: keyIndex,
-      noKeyItem: noKeyItem
-    }, "noKeyItem", noKeyItem);
+      noKeyItem: noKeyItem }, 'noKeyItem', noKeyItem);
   }
 
   function listDiff(oldArray, newArray) {
     var key = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'id';
+
     var newMap = getKeyIndexAndNoKeyItem(newArray, key);
+
     var newKeyIndex = newMap.keyIndex;
     var newNoKeyItem = newMap.noKeyItem;
     var moves = [];
     var children = [];
-    var noKeyIndex = 0;
-    var i = 0; // 生成一个和oldArray等长的比较数组，
-    // 其中新数组中不存在的项删除、新数组中没有key的项插入
 
+    var noKeyIndex = 0;
+    var i = 0;
+
+    // 生成一个和oldArray等长的比较数组，
+    // 其中新数组中不存在的项删除、新数组中没有key的项插入
     for (i = 0; i < oldArray.length; i++) {
       var oldItem = oldArray[i];
       var oldItemKey = getValueByKey(oldItem, key);
@@ -337,8 +313,9 @@ var pray = (function (exports) {
     }
 
     var simulate = children.slice(0);
-    i = 0; // 删除不存在的项
+    i = 0;
 
+    // 删除不存在的项
     while (i < simulate.length) {
       if (simulate[i] === null) {
         remove(i);
@@ -349,16 +326,14 @@ var pray = (function (exports) {
     }
 
     var j = i = 0; // j指向新数组, i指向老数组
-
     var offset = 0; // 偏移量, insert之后有用
 
-    var simulateKeyIndex = getKeyIndexAndNoKeyItem(simulate).keyIndex;
+    var simulateKeyIndex = getKeyIndexAndNoKeyItem(simulate, key).keyIndex;
 
     while (j < newArray.length) {
       var newItem = newArray[j];
       var newItemKey = getValueByKey(newItem, key);
       var _oldItem = simulate[i];
-
       var _oldItemKey = getValueByKey(_oldItem, key);
 
       if (_.isNotNull(_oldItem)) {
@@ -379,12 +354,10 @@ var pray = (function (exports) {
         insert(j, newItem);
         offset += 1;
       }
-
       j += 1;
     }
 
     var restNum = simulate.length - i;
-
     for (var k = 0; k < restNum; k++) {
       remove(j);
       removeSimulate(j);
@@ -395,23 +368,16 @@ var pray = (function (exports) {
     }
 
     function remove(index) {
-      moves.push({
-        type: 0,
-        index: index
-      });
+      moves.push({ type: 0, index: index });
     }
 
     function insert(index, item) {
-      moves.push({
-        type: 1,
-        index: index,
-        item: item
-      });
+      moves.push({ type: 1, index: index, item: item });
     }
 
     function swapSimulate(from, to, oldItemKey, newItemKey) {
-      // 不止要交换项，还要交换keyIndex内的值
-      var _ref2 = [simulate[to], simulate[from]];
+      var _ref2 = [simulate[to], simulate[from]]; // 不止要交换项，还要交换keyIndex内的值
+
       simulate[from] = _ref2[0];
       simulate[to] = _ref2[1];
       var _ref3 = [simulateKeyIndex[newItemKey], simulateKeyIndex[oldItemKey]];
@@ -420,11 +386,7 @@ var pray = (function (exports) {
     }
 
     function swap(from, to) {
-      moves.push({
-        type: 2,
-        from: from,
-        to: to
-      });
+      moves.push({ type: 2, from: from, to: to });
     }
 
     return {
@@ -437,13 +399,14 @@ var pray = (function (exports) {
    * @param {VNode} oldTree 
    * @param {VNode} newTree 
    */
-
   function diff (oldTree, newTree) {
     var patches = {};
     var index = 0;
     dfsWalk(oldTree, newTree, index, patches);
+
     return patches;
   }
+
   /**
    * 
    * @param {VNode} oldNode 
@@ -451,7 +414,6 @@ var pray = (function (exports) {
    * @param {number} index 
    * @param {array} patches 
    */
-
   function dfsWalk(oldNode, newNode, index, patches) {
     var currentNodePatches = [];
 
@@ -476,7 +438,6 @@ var pray = (function (exports) {
       } else {
         // tag相同, 对比 props 和 children
         diffAttrs(oldNode.props, newNode.props, currentNodePatches); // 对比props
-
         diffChildren(oldNode.children, newNode.children, index, currentNodePatches, patches); // 对比children
       }
     } else {
@@ -491,25 +452,25 @@ var pray = (function (exports) {
       patches[index] = currentNodePatches;
     }
   }
+
   /**
    * @param {object} oldProps 
    * @param {object} newProps 
    * @param {array} currentNodePatches 
    */
-
-
   function diffAttrs(oldProps, newProps, currentNodePatches) {
     var diffResult = {};
-    var count = 0; // 查找修改、删除
+    var count = 0;
 
+    // 查找修改、删除
     for (var key in oldProps) {
       if (oldProps[key] !== newProps[key]) {
         diffResult[key] = newProps[key];
         count += 1;
       }
-    } // 查找新增
+    }
 
-
+    // 查找新增
     for (var _key in newProps) {
       if (!oldProps.hasOwnProperty(_key)) {
         diffResult[_key] = newProps[_key];
@@ -524,14 +485,13 @@ var pray = (function (exports) {
       });
     }
   }
+
   /**
    * @param {[VNode]} oldChildren 
    * @param {[VNode]} newChildren 
    * @param {array} currentNodePatches 
    * @param {array} patches 
    */
-
-
   function diffChildren(oldChildren, newChildren, index, currentNodePatches, patches) {
     var _listDiff = listDiff(oldChildren, newChildren, 'key'),
         moves = _listDiff.moves,
@@ -546,20 +506,24 @@ var pray = (function (exports) {
 
     var leftNode = null;
     var currentNodeIndex = index;
+
     newChildren = children;
 
     _.each(oldChildren, function (index, child) {
       var newChild = newChildren[index];
+
       currentNodeIndex = leftNode && leftNode.count ? leftNode.count + currentNodeIndex + 1 : currentNodeIndex + 1;
+
       leftNode = child;
+
       dfsWalk(child, newChild, currentNodeIndex, patches);
     });
   }
 
-  exports.vnode = vnode;
   exports.diff = diff;
   exports.patch = patch;
+  exports.vnode = vnode;
 
-  return exports;
+  Object.defineProperty(exports, '__esModule', { value: true });
 
-}({}));
+}));

@@ -10,15 +10,15 @@ const PATCHES = {
 export { PATCHES }
 
 
-function dfs(node, patches, index) {
-  const currentPatches = patches[index]
+function dfs(node, patches, walker) {
+  const currentPatches = patches[walker.index]
 
   const len = node.childNodes ? node.childNodes.length : 0
 
   for (let i = 0; i < len; i++) {
     const child = node.childNodes[i]
-    index += 1
-    dfs(child, patches, index)
+    walker.index += 1
+    dfs(child, patches, walker)
   }
   
   if (currentPatches) {
@@ -89,6 +89,6 @@ function reorder(node, moves) {
 }
 
 export default function patch(node, patches) {
-  let index = 0
-  dfs(node, patches, index)
+  let walker = { index: 0 }
+  dfs(node, patches, walker)
 }

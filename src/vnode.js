@@ -61,6 +61,6 @@ export class VNode {
  * @param  {array} children 
  * @return {VNode}
  */
-export default function (type, props, ...children) {
+export default function vnode(type, props, ...children) {
   return new VNode(type, props, _.flatArr(children))
 }

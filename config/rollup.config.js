@@ -8,7 +8,7 @@ module.exports =  {
   input: 'index.js',
   output: {
     file: 'dist/pray.js',
-    format: 'iife',
+    format: 'umd',
     name: 'pray'
   },
   plugins: [
@@ -19,8 +19,7 @@ module.exports =  {
       include: [ path.join(__dirname, 'src', '**', '*.js') ]
     }),
     babel({
-      babelrc: false,
-      presets: [['@babel/preset-env', { modules: false }]],
+      babelrc: true,
       runtimeHelpers: true,
       exclude: [
         './node_modules/**',

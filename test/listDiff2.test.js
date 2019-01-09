@@ -166,7 +166,6 @@ describe('listDiff2', () => {
     expect(a).toEqual(b)
   })
 
-
   it('can diff with no key', () => {
     const a = ['a', 'b', 'c', 'd', 'e']
     const b = ['c', 'd', 'e', 'a', 'g', 'h', 'j']
