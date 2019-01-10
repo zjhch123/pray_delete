@@ -1,13 +1,15 @@
+import { isNumberOrString } from './is'
 import _ from './utils'
 import { VNode } from './vnode'
 import { PATCHES } from './patch'
-import listDiff from './listDiff2'
+import listDiff from './listDiff'
 
 /**
  * @param {VNode} oldTree 
  * @param {VNode} newTree 
+ * @return {PatchItem}
  */
-export default function (oldTree, newTree) {
+export default function diff(oldTree, newTree) {
   const patches = {}
   let index = 0
   dfsWalk(oldTree, newTree, index, patches)
@@ -19,15 +21,15 @@ export default function (oldTree, newTree) {
  * 
  * @param {VNode} oldNode 
  * @param {VNode} newTree 
- * @param {number} index 
- * @param {array} patches 
+ * @param {Number} index 
+ * @param {PatchItem} patches 
  */
 function dfsWalk(oldNode, newNode, index, patches) {
   const currentNodePatches = []
 
   if (newNode === null) {
     // TODO ?
-  } else if (_.isNumberOrString(oldNode) && _.isNumberOrString(newNode)) { // 如果都是简单类型
+  } else if (isNumberOrString(oldNode) && isNumberOrString(newNode)) { // 如果都是简单类型
     if (oldNode != newNode) { // 那就进行简单的判断
       currentNodePatches.push({
         type: PATCHES.TEXT,
@@ -60,9 +62,9 @@ function dfsWalk(oldNode, newNode, index, patches) {
 }
 
 /**
- * @param {object} oldProps 
- * @param {object} newProps 
- * @param {array} currentNodePatches 
+ * @param {Object} oldProps 
+ * @param {Object} newProps 
+ * @param {[PatchDetail]} currentNodePatches 
  */
 function diffAttrs(oldProps, newProps, currentNodePatches) {
   const diffResult = {}
@@ -95,8 +97,9 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
 /**
  * @param {[VNode]} oldChildren 
  * @param {[VNode]} newChildren 
- * @param {array} currentNodePatches 
- * @param {array} patches 
+ * @param {Number} index
+ * @param {[PatchDetail]} currentNodePatches 
+ * @param {PatchItem} patches 
  */
 function diffChildren(oldChildren, newChildren, index, currentNodePatches, patches) {
   const {

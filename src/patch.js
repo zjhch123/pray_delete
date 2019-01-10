@@ -1,15 +1,22 @@
 import _ from './utils'
+import { setAttr } from './core/attr'
 
-const PATCHES = {
-  REPLACE: Symbol('replace'),
-  TEXT: Symbol('text'),
-  PROPS: Symbol('props'),
-  REORDER: Symbol('reorder'),
+/**
+ * 
+ * @param {HTMLElement} node 
+ * @param {PatchItem} patches 
+ */
+export default function patch(node, patches) {
+  let walker = { index: 0 }
+  dfs(node, patches, walker)
 }
 
-export { PATCHES }
-
-
+/**
+ * 
+ * @param {HTMLElement} node 
+ * @param {PatchItem} patches 
+ * @param {Object} walker 
+ */
 function dfs(node, patches, walker) {
   const currentPatches = patches[walker.index]
 
@@ -58,7 +65,7 @@ function setProps(node, props) {
     if (typeof props[key] === 'undefined') {
       node.removeAttribute(key)
     } else {
-      _.setAttr(node, key, props[key])
+      setAttr(node, key, props[key])
     }
   }
 }
@@ -88,7 +95,14 @@ function reorder(node, moves) {
   })
 }
 
-export default function patch(node, patches) {
-  let walker = { index: 0 }
-  dfs(node, patches, walker)
+/**
+ * @param { PATCHES }
+ */
+const PATCHES = {
+  REPLACE: Symbol('replace'),
+  TEXT: Symbol('text'),
+  PROPS: Symbol('props'),
+  REORDER: Symbol('reorder'),
 }
+
+export { PATCHES }

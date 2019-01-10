@@ -1,10 +1,13 @@
+import { isNotNull } from './is'
+
 /**
  * 传入一个item(object)和key, 获取 item 内 key 对应的 value
- * @param {object} item 
- * @param {string|function} key 
+ * @param {Object} item 
+ * @param {String|Function} key 
+ * @return {any} value
  */
-export function getValueByKey(item, key) {
-  if (!item || !key) { return undefined }
+function getValueByKey(item, key) {
+  if (!isNotNull(item) || !isNotNull(key)) { return undefined }
   return typeof key === 'string' ? item[key] : key(item)
 }
 
@@ -13,11 +16,13 @@ export function getValueByKey(item, key) {
  * 返回 {keyIndex: {4: 0, 1: 2, 2: 1, 3: 3}, noKeyItem: [{item: 5}]}
  * keyIndex 指的是 key 与其对应的 Index 的 object
  * noKeyItem 指的是 list 中没有 key 的项
- * @param {array} list 
- * @param {string|function} key 
- * @return {object} { keyIndex: {}, noKeyItem: [] }
+ * @param {Array} list 
+ * @param {String|Function} key 
+ * @return {Object}
+ *            - keyIndex: Object
+ *            - noKeyItem: Array
  */
-export function getKeyIndexAndNoKeyItem(list, key = 'id') {
+function getKeyIndexAndNoKeyItem(list, key = 'id') {
   const keyIndex = {}
   const noKeyItem = []
 
@@ -25,7 +30,7 @@ export function getKeyIndexAndNoKeyItem(list, key = 'id') {
     const item = list[i]
     const itemKey = getValueByKey(item, key)
 
-    if (!!itemKey) {
+    if (isNotNull(itemKey)) {
       keyIndex[itemKey] = i
     } else {
       noKeyItem.push(item)
@@ -33,104 +38,100 @@ export function getKeyIndexAndNoKeyItem(list, key = 'id') {
   }
 
   return {
-    keyIndex,
-    noKeyItem,
+    keyIndex: keyIndex,
+    noKeyItem, noKeyItem,
   }
 }
 
 /**
- * 数组diff
- * @param {array} oldList 老数组
- * @param {array} newList 新数组
- * @param {string|function} key 数组内项的id
- * @return {[object]} 返回数组操作集合, 凭借此集合可将老数组转化为新数组
- *         - type = 0, remove
- *         - type = 1, insert
+ * 
+ * @param {Array} oldArray 
+ * @param {Array} newArray 
+ * @param {String} key 
+ * @return {ListPatches}
  */
-export default function listDiff(oldList, newList, key = 'id') {
-  const oldMap = getKeyIndexAndNoKeyItem(oldList, key)
-  const newMap = getKeyIndexAndNoKeyItem(newList, key)
-
-  const oldKeyIndex = oldMap.keyIndex
+export default function listDiff(oldArray, newArray, key = 'id') {
+  const newMap = getKeyIndexAndNoKeyItem(newArray, key)
+  
   const newKeyIndex = newMap.keyIndex
-  const newNoKey = newMap.noKeyItem
-
+  const newNoKeyItem = newMap.noKeyItem
   const moves = []
-  const oldCopy = []
+  const children = []
 
-  let children = []
-  let i = 0
   let noKeyIndex = 0
+  let i = 0
 
-  for (i = 0; i < oldList.length; i++) {
-    const item = oldList[i]
-    const itemKey = getValueByKey(item, key)
-    if (typeof itemKey !== 'undefined' && itemKey !== null) {
-      // itemkey 存在
-      if (!newKeyIndex.hasOwnProperty(itemKey)) {
-        oldCopy.push(null)
-      } else {
-        const newItemIndex = newList[newKeyIndex[itemKey]]
-        oldCopy.push(newList[newItemIndex])
-      }
-    } else {
-      // itemKey 不存在
-      oldCopy.push(newNoKey[noKeyIndex ++] || null)
-    }
-  }
-
-  children = oldCopy.slice(0)
-
-  i = 0
-
-  while (i < oldCopy.length) {
-    if (oldCopy[i] === null) {
-      remove(i)
-      removeOldCopy(i)
-    } else {
-      i++
-    }
-  }
-
-  let j = i = 0 // j - 老数组的指针, i - 新数组的指针
-
-  while (i < newList.length) {
-    const newItem = newList[i]
-    const newItemKey = getValueByKey(newItem, key)
-    const oldItem = oldCopy[j]
+  // 生成一个和oldArray等长的比较数组，
+  // 其中新数组中不存在的项删除、新数组中没有key的项插入
+  for (i = 0; i < oldArray.length; i++) {
+    const oldItem = oldArray[i]
     const oldItemKey = getValueByKey(oldItem, key)
 
-    if (oldItem) { // 如果老的项存在
-      if (oldItemKey === newItemKey) { // 如果正好key值相等
-        j += 1
-      } else { // key值不相等
-        if (!oldKeyIndex.hasOwnProperty(newItemKey)) { // 如果新的key在老数组中不存在
-          insert(i, newItem) // 直接插入
+    if (isNotNull(oldItemKey)) {
+      if (newKeyIndex.hasOwnProperty(oldItemKey)) {
+        const newItemIndex = newKeyIndex[oldItemKey]
+        children.push(newArray[newItemIndex])
+      } else {
+        children.push(null)
+      }
+    } else {
+      children.push(newNoKeyItem[noKeyIndex++] || null)
+    }
+  }
+
+  const simulate = children.slice(0)
+  i = 0
+
+  // 删除不存在的项
+  while(i < simulate.length) {
+    if (simulate[i] === null) {
+      remove(i)
+      removeSimulate(i)
+    } else {
+      i += 1
+    }
+  }
+
+  let j = i = 0 // j指向新数组, i指向老数组
+  let offset = 0 // 偏移量, insert之后有用
+
+  const simulateKeyIndex = getKeyIndexAndNoKeyItem(simulate, key).keyIndex
+
+  while (j < newArray.length) {
+    const newItem = newArray[j]
+    const newItemKey = getValueByKey(newItem, key)
+    const oldItem = simulate[i]
+    const oldItemKey = getValueByKey(oldItem, key)
+
+    if (isNotNull(oldItem)) {
+      if (oldItemKey === newItemKey) {
+        i += 1
+      } else {
+        if (simulateKeyIndex.hasOwnProperty(newItemKey)) {
+          const oldTargetIndex = simulateKeyIndex[newItemKey]
+          swap(i + offset, oldTargetIndex + offset)
+          swapSimulate(i, oldTargetIndex, oldItemKey, newItemKey)
+          i += 1
         } else {
-          const oldNextItemKey = getValueByKey(oldCopy[j + 1], key)
-          if (oldNextItemKey === newItemKey) {
-            remove(i)
-            removeOldCopy(j)
-            j += 1
-          } else {
-            insert(i, newItem)
-          }
+          insert(j, newItem)
+          offset += 1
         }
       }
-    } else { // 如果老的项不存在, 直接插入
-      insert(i, newItem)
+    } else { 
+      insert(j, newItem)
+      offset += 1
     }
-    i += 1
+    j += 1
   }
 
-  let restNum = oldCopy.length - j
-
+  const restNum = simulate.length - i
   for (let k = 0; k < restNum; k++) {
-    remove(i)
+    remove(j)
+    removeSimulate(j)
   }
 
-  function removeOldCopy(index) {
-    oldCopy.splice(index, 1)
+  function removeSimulate(index) {
+    simulate.splice(index, 1)
   }
 
   function remove(index) {
@@ -141,8 +142,30 @@ export default function listDiff(oldList, newList, key = 'id') {
     moves.push({ type: 1, index, item })
   }
 
+  function swapSimulate(from, to, oldItemKey, newItemKey) { // 不止要交换项，还要交换keyIndex内的值
+    [
+      simulate[from], 
+      simulate[to]
+    ] = [
+      simulate[to], 
+      simulate[from]
+    ];
+
+    [
+      simulateKeyIndex[oldItemKey],
+      simulateKeyIndex[newItemKey]  
+    ] = [
+      simulateKeyIndex[newItemKey],
+      simulateKeyIndex[oldItemKey]
+    ];
+  }
+
+  function swap(from, to) {
+    moves.push({type: 2, from, to})
+  }
+
   return {
-    moves,
-    children
+    moves: moves,
+    children: children
   }
 }

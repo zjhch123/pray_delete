@@ -1,9 +1,14 @@
+import { isFunction } from './is'
+import { setAttr } from './core/attr'
 import _ from './utils'
 
-/**
- * @class VNode
- */
 export class VNode {
+  /**
+   * 
+   * @param {String|Function} type 
+   * @param {VNodeProp} props 
+   * @param {[VNode|String]} children 
+   */
   constructor(type, props, children) {
     this.type = type
     this.props = props === null ? {} : props
@@ -23,13 +28,20 @@ export class VNode {
     })
   }
 
+  /**
+   * @return {HTMLElement}
+   */
   render() {
+    if (isFunction(this.type)) {
+      const ret = this.type(this.props)
+      return ret instanceof VNode ? ret.render() : document.createTextNode(ret)
+    }
     const el = document.createElement(this.type)
     const props = this.props
 
     for (let propName in props) {
       const propValue = props[propName]
-      _.setAttr(el, propName, propValue)
+      setAttr(el, propName, propValue)
     }
 
     for (let i = 0; i < this.children.length; i++) {
@@ -48,7 +60,7 @@ export class VNode {
 
   /**
    * 只比较type和key是否相等
-   * @param {VNode} otherNode 
+   * @param {VNode|String} otherNode 
    */
   compare(otherNode) {
     return otherNode instanceof VNode ? otherNode.type === this.type && otherNode.key === this.key : false
@@ -57,8 +69,8 @@ export class VNode {
 
 /**
  * @param {string} type 
- * @param {object} props 
- * @param  {array} children 
+ * @param {VNodeProp} props 
+ * @param  {[VNode|String]} children 
  * @return {VNode}
  */
 export default function vnode(type, props, ...children) {

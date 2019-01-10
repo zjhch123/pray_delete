@@ -1,5 +1,28 @@
 import listDiff from '../src/listDiff'
 
+
+/**
+ * 
+ * @param {Array} arr 
+ * @param {[ListPatchDetail]} moves 
+ */
+const transfer = (arr, moves) => {
+  moves.forEach(move => {
+    switch (move.type) {
+      case 0:
+        arr.splice(move.index, 1)
+        break
+      case 1:
+        arr.splice(move.index, 0, move.item)
+        break
+      case 2:
+        const { from, to } = move;
+        [arr[from], arr[to]] = [arr[to], arr[from]];
+        break
+    }
+  })
+}
+
 /**
  * 乱序传入的数组, 并且会随机删除某些值
  */
@@ -26,7 +49,7 @@ function shuffle(a) {
 }
 
 /**
- * 生成一个长度为100的数组, 内容为{id: x}或者{type: xxx}
+ * 生成一个长度随机且小于100的数组, 内容为{id: x}
  */
 function generateList() {
   const length = parseInt(Math.random() * 100)
@@ -40,24 +63,156 @@ function generateList() {
 }
 
 describe('listDiff', () => {
-  it('should execute list diff', () => {
+  it('can diff normal', () => {
+    const a = [
+      {id: 1},
+      {id: 2},
+      {id: 3},
+      {id: 4},
+      {id: 5},
+      {id: 6},
+      {id: 7},
+      {id: 8},
+    ]
+    const b = [
+      {id: 4},
+      {id: 2},
+      {id: 1},
+      {id: 3},
+      {id: 8},
+      {id: 6},
+      {id: 5},
+      {id: 7},
+    ]
+
+    const ret = listDiff(a, b)
+
+    expect(ret.children).toEqual([
+      {id: 1},
+      {id: 2},
+      {id: 3},
+      {id: 4},
+      {id: 5},
+      {id: 6},
+      {id: 7},
+      {id: 8},
+    ])
+
+    const moves = ret.moves
+    transfer(a, moves)
+
+    expect(a).toEqual(b)
+  })
+
+  it('can diff normal2', () => {
+    const a = [0,1,2,3,4,5,6,7,8,9]
+    const b = [4,1,6,8,3,5,0,9]
+
+    const ret = listDiff(a, b, (item) => item)
+
+    expect(ret.children).toEqual([0, 1, null, 3, 4, 5, 6, null, 8, 9])
+
+    const moves = ret.moves
+    transfer(a, moves)
+
+    expect(a).toEqual(b)
+  })
+
+  it('can diff with cut', () => {
+    const a = [
+      {id: 1},
+      {id: 2},
+      {id: 3},
+      {id: 4},
+      {id: 5},
+      {id: 6},
+      {id: 7},
+      {id: 8},
+    ]
+    const b = [
+      {id: 4},
+      {id: 2},
+      {id: 1},
+      {id: 3},
+    ]
+
+    const ret = listDiff(a, b)
+
+    expect(ret.children).toEqual([{id: 1},{id: 2},{id: 3},{id: 4},null,null,null,null])
+
+    const moves = ret.moves
+    transfer(a, moves)
+
+    expect(a).toEqual(b)
+  })
+
+  it('can diff with add', () => {
+    const a = [
+      {id: 1},
+      {id: 2},
+      {id: 3},
+      {id: 4},
+    ]
+    const b = [
+      {id: 4},
+      {id: 2},
+      {id: 1},
+      {id: 3},
+      {id: 8},
+      {id: 6},
+      {id: 5},
+      {id: 7},
+    ]
+
+    const ret = listDiff(a, b)
+
+    const moves = ret.moves
+    transfer(a, moves)
+
+    expect(a).toEqual(b)
+  })
+
+  it('can diff with no key', () => {
+    const a = ['a', 'b', 'c', 'd', 'e']
+    const b = ['c', 'd', 'e', 'a', 'g', 'h', 'j']
+
+    const ret = listDiff(a, b)
+
+    const moves = ret.moves
+
+    transfer(a, moves)
+
+    expect(a).toEqual(['a', 'b', 'c', 'd', 'e', 'h', 'j'])
+  })
+
+  it('can not diff with no key', () => {
+    const a = [
+      {type: 4},
+    ]
+    const b = [
+      {type: 5},
+    ]
+
+    const ret = listDiff(a, b, 'id')
+
+    const moves = ret.moves
+
+    transfer(a, moves)
+
+    expect(a).toEqual([{type: 4}])
+  })
+
+  it('random diff test', () => {
     for (let i = 0; i < 100; i++) {
-      const l1 = generateList()
-      const l2 = shuffle(l1)
-      const ret = listDiff(l1, l2, 'key').moves
+      const a = generateList()
+      const b = shuffle(a)
 
-      ret.forEach(result => {
-        switch (result.type) {
-          case 0: // 删除
-            l1.splice(result.index, 1)
-            break
-          case 1: // 插入
-            l1.splice(result.index, 0, result.item)
-            break
-        }
-      })
+      const ret = listDiff(a, b, 'key')
 
-      expect(l1).toEqual(l2)
+      const moves = ret.moves
+
+      transfer(a, moves)
+      expect(a).toEqual(b)
     }
   })
 })
