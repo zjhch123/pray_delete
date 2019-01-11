@@ -1,5 +1,6 @@
 import _ from './utils'
 import { setAttr } from './core/attr'
+import { removeEvent } from './core/event'
 
 /**
  * 

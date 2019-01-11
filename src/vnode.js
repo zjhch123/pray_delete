@@ -32,10 +32,10 @@ export class VNode {
    * @return {HTMLElement}
    */
   render() {
-    if (isFunction(this.type)) {
-      const ret = this.type(this.props)
-      return ret instanceof VNode ? ret.render() : document.createTextNode(ret)
-    }
+    // if (isFunction(this.type)) {
+    //   const ret = this.type(this.props)
+    //   return ret instanceof VNode ? ret.render() : document.createTextNode(ret)
+    // }
     const el = document.createElement(this.type)
     const props = this.props
 
@@ -74,5 +74,8 @@ export class VNode {
  * @return {VNode}
  */
 export default function vnode(type, props, ...children) {
+  if (isFunction(type)) {
+    return type(props)
+  }
   return new VNode(type, props, _.flatArr(children))
 }

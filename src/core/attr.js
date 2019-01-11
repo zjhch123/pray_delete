@@ -1,8 +1,8 @@
-import event from './event'
+import { addEvent } from './event'
 
 const setAttr = (el, propName, propValue) => {
   if (/^on\w+$/.test(propName)) {
-    event(el, propName, propValue)
+    addEvent(el, propName, propValue)
     return
   }
   switch (propName) {
