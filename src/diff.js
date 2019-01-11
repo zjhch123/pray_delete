@@ -1,7 +1,8 @@
 import { isNumberOrString } from './is'
-import _ from './utils'
 import { VNode } from './vnode'
 import { PATCHES } from './patch'
+import { isEventName } from './core/event'
+import _ from './utils'
 import listDiff from './listDiff'
 
 /**
@@ -72,6 +73,9 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
 
   // 查找修改、删除
   for (let key in oldProps) {
+    if (isEventName(key) && newProps.hasOwnProperty(key)) { // 不处理事件监听函数
+      continue
+    }
     if (oldProps[key] !== newProps[key]) {
       diffResult[key] = newProps[key]
       count += 1

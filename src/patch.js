@@ -41,6 +41,7 @@ function applyPatches(node, currentPatches) {
         reorder(node, patch.moves)
         break
       case PATCHES.REPLACE:
+        removeEvent(node)
         const newNode = 
           typeof patch.item === 'string' 
             ? document.createTextNode(patch.item)
@@ -77,6 +78,7 @@ function reorder(node, moves) {
 
     switch (move.type) {
       case 0: // remove
+        removeEvent(node.childNodes[index])
         node.removeChild(node.childNodes[index])
         break
       case 1: // insert

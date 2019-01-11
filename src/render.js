@@ -1,4 +1,10 @@
 import { VNode } from './vnode'
+import { subscribe } from './useState'
+import diff from './diff'
+import patch from './patch'
+
+let rendered = null
+
 /**
  * 
  * @param {VNode|String} element 
@@ -6,11 +12,13 @@ import { VNode } from './vnode'
  */
 export default function render(element, targetDOM) {
   if (element instanceof VNode) {
-    targetDOM.appendChild(element.render())
-  } else if (window.HTMLElement && element instanceof window.HTMLElement) {
-    targetDOM.appendChild(element)
-  } else {
-    const node = document.createTextNode(element)
-    targetDOM.appendChild(node)
+    rendered = element.render()
+    targetDOM.appendChild(rendered)
+    subscribe((preVNode, nextVNode) => {
+      const patches = diff(preVNode, nextVNode)
+      patch(rendered, patches)
+    })
+    return
   }
+  throw new Error('render method need a VNode element but received ' + element + ' !')
 }

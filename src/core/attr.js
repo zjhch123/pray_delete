@@ -1,7 +1,7 @@
-import { addEvent } from './event'
+import { addEvent, isEventName } from './event'
 
-const setAttr = (el, propName, propValue) => {
-  if (/^on\w+$/.test(propName)) {
+export function setAttr(el, propName, propValue) {
+  if (isEventName(propName)) {
     addEvent(el, propName, propValue)
     return
   }
@@ -20,14 +20,10 @@ const setAttr = (el, propName, propValue) => {
       el.setAttribute('class', propValue)
       break
     case 'key':
-      el.setAttribute('data-pray-key', propValue)
+      el.setAttribute('data-pray-id', propValue)
       break
     default:
       el.setAttribute(propName, propValue)
       break
   }
-}
-
-export {
-  setAttr
 }

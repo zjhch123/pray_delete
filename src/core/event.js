@@ -1,31 +1,53 @@
-const eventCache = {}
+const eventCache = window.eventCache = new Map()
+const eventReg = /^on(\w+)$/
+
+export function isEventName(name) {
+  return eventReg.test(name)
+}
+
+export function getEventName(name) {
+  return name.match(eventReg)[1].toLowerCase()
+}
 
 /**
  * @param {HTMLElement} el 
  * @param {String} name 
- * @param {Function} func 
+ * @param {EventListenerOrEventListenerObject} listener 
  */
-export function addEvent(el, name, func) {
-  const reg = /^on(\w+)$/
-  const eventName = name.match(reg)[1].toLowerCase()
-  addDocumentEvent(el, eventName, func)
+export function addEvent(el, name, listener) {
+  if (!isEventName(name)) {
+    return
+  }
+  const eventName = getEventName(name)
+  addDocumentEvent(el, eventName, listener)
 }
 
+/**
+ * 
+ * @param {HTMLElement} el 
+ * @param {String} eventName 
+ */
 export function removeEvent(el, eventName) {
-  if (typeof eventCache[el] === 'undefined') {
+  if (!eventCache.has(el)) {
     return
   }
 
   if (typeof eventName === 'undefined') {
-    eventCache[el].forEach(({ eventName, eventListener }) => {
+    eventCache.get(el).forEach(({ eventName, eventListener }) => {
       document.removeEventListener(eventName, eventListener)
     })
-    eventCache[el] = []
+    eventCache.delete(el)
   } else {
-    eventCache[el].filter((item) => item.eventName === eventName).forEach(({ eventListener }) => {
+    eventCache.get(el).filter((item) => item.eventName === eventName).forEach(({ eventListener }) => {
       document.removeEventListener(eventName, eventListener)
     })
-    eventCache[el] = eventCache[el].filter((item) => item.eventName !== eventName)
+    
+    const lastEvents = eventCache.get(el).filter((item) => item.eventName !== eventName)
+    if (lastEvents.length === 0) {
+      eventCache.delete(el)
+    } else {
+      eventCache.set(el, lastEvents)
+    }
   }
 }
 
@@ -33,15 +55,15 @@ export function removeEvent(el, eventName) {
  * 
  * @param {HTMLElement} el 
  * @param {String} eventName 
- * @param {EventListenerOrEventListenerObject} func 
+ * @param {EventListenerOrEventListenerObject} listener 
  */
 function addDocumentEvent(el, eventName, listener) {
   const eventListener = generateEventHandler(el, listener)
   const item = { eventName, eventListener }
 
-  typeof eventCache[el] === 'undefined' 
-    ? eventCache[el] = [item] 
-    : eventCache[el].push(item);
+  eventCache.has(el)
+    ? eventCache.get(el).push(item)
+    : eventCache.set(el, [item]);
 
   document.addEventListener(eventName, eventListener)
 }
