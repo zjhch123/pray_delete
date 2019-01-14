@@ -71,7 +71,7 @@ export class VNode {
  */
 export default function vnode(type, props, ...children) {
   if (isFunction(type)) {
-    return type(props)
+    return type.call(type.name, props)
   }
   return new VNode(type, props, _.flatArr(children))
 }
