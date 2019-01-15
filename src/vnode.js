@@ -13,6 +13,8 @@ export class VNode {
     this.props = props === null ? {} : props
     this.children = children || []
 
+    this.owner = null
+    
     this.count = 0
 
     this.key = this.props.key // 用于diff
@@ -33,6 +35,8 @@ export class VNode {
   render() {
     const el = document.createElement(this.type)
     const props = this.props
+
+    this.owner = el
 
     for (let propName in props) {
       const propValue = props[propName]
@@ -61,7 +65,7 @@ export class VNode {
     return otherNode instanceof VNode ? otherNode.type === this.type && otherNode.key === this.key : false
   }
 
-  original() {
+  clone() {
     return new VNode(this.type, this.props, this.children)
   }
 }

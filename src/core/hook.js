@@ -1,6 +1,6 @@
 import { onStateChange } from './state'
 
-const memorizeState = new Map()
+const memorizeState = window.state = new Map()
 let lastComponent = null
 
 export function memorizeHookState(functionalComponent) {
@@ -20,7 +20,7 @@ export function useState(defaultValue) {
     throw new Error('Component get null in `useState`')
   }
   const stateObject = memorizeState.get(lastComponent)
-  const ret = [ stateDispatcher(stateObject, defaultValue), generateStateDispatcherHandler(stateObject) ];
+  const ret = [ stateDispatcher(stateObject, defaultValue), stateDispatcherHandler(stateObject) ];
   stateObject.cursor += 1
   return ret
 }
@@ -46,10 +46,11 @@ function stateDispatcher(stateObject, defaultValue) {
   return stateObject.state[stateObject.cursor]
 }
 
-function generateStateDispatcherHandler(stateObject) {
+function stateDispatcherHandler(stateObject) {
   if (stateObject.isFirst) {
+    const index = stateObject.cursor
     const handler = (value) => {
-      stateObject.state[stateObject.cursor] = value
+      stateObject.state[index] = value
       onStateChange()
     }
     stateObject.eventHandler[stateObject.cursor] = handler

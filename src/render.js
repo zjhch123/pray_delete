@@ -1,7 +1,10 @@
 import { VNode } from './vnode'
+import { transferVNodeTree } from './core/element'
 import { subscribe } from './core/state'
 import diff from './diff'
 import patch from './patch'
+
+let lastMountedVNode = null
 
 /**
  * 
@@ -9,14 +12,19 @@ import patch from './patch'
  * @param {HTMLElement} targetDOM 
  */
 export default function render(element, targetDOM) {
+  console.log(element)
   if (element instanceof VNode) {
-    const rendered = element.render()
-    targetDOM.appendChild(rendered)
+    lastMountedVNode = transferVNodeTree(element)
+    const rendered = lastMountedVNode.render()
+    targetDOM.append(rendered)
+
     subscribe(() => {
-      const newElement = element.original()
-      const patches = diff(element, newElement)
+      const nextMountedVNode = transferVNodeTree(element)
+      const patches = diff(lastMountedVNode, nextMountedVNode)
+
       patch(rendered, patches)
-      element = newElement
+
+      lastMountedVNode = nextMountedVNode
     })
     return
   }

@@ -1,4 +1,4 @@
-const eventCache = new Map()
+const eventCache = window.event = new Map()
 const eventReg = /^on(\w+)$/
 
 export function isEventName(name) {
