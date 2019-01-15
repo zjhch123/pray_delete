@@ -1,12 +1,13 @@
-import vnode from './src/vnode'
+import element from './src/core/element'
+import { useState } from './src/core/hook'
+
 import render from './src/render'
 import diff from './src/diff'
 import patch from './src/patch'
-import { useState } from './src/core/state'
 
 export {
   useState, 
-  vnode,
+  element,
   render,
   diff,
   patch

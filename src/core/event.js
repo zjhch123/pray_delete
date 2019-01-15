@@ -1,4 +1,4 @@
-const eventCache = window.eventCache = new Map()
+const eventCache = new Map()
 const eventReg = /^on(\w+)$/
 
 export function isEventName(name) {
@@ -19,7 +19,7 @@ export function addEvent(el, name, listener) {
     return
   }
   const eventName = getEventName(name)
-  addDocumentEvent(el, eventName, listener)
+  addEventListener(el, eventName, listener)
 }
 
 /**
@@ -34,20 +34,15 @@ export function removeEvent(el, eventName) {
 
   if (typeof eventName === 'undefined') {
     eventCache.get(el).forEach(({ eventName, eventListener }) => {
-      document.removeEventListener(eventName, eventListener)
+      el.removeEventListener(eventName, eventListener)
     })
-    eventCache.delete(el)
   } else {
     eventCache.get(el).filter((item) => item.eventName === eventName).forEach(({ eventListener }) => {
-      document.removeEventListener(eventName, eventListener)
+      el.removeEventListener(eventName, eventListener)
     })
     
     const lastEvents = eventCache.get(el).filter((item) => item.eventName !== eventName)
-    if (lastEvents.length === 0) {
-      eventCache.delete(el)
-    } else {
-      eventCache.set(el, lastEvents)
-    }
+    eventCache.set(el, lastEvents)
   }
 }
 
@@ -57,21 +52,26 @@ export function removeEvent(el, eventName) {
  * @param {String} eventName 
  * @param {EventListenerOrEventListenerObject} listener 
  */
-function addDocumentEvent(el, eventName, listener) {
-  const eventListener = generateEventHandler(el, listener)
-  const item = { eventName, eventListener }
+function addEventListener(el, eventName, listener) {
+  if (eventCache.has(el)) {
+    const events = eventCache.get(el)
 
-  eventCache.has(el)
-    ? eventCache.get(el).push(item)
-    : eventCache.set(el, [item]);
+    const lastSameEvents = events.filter(event => event.eventName === eventName)
 
-  document.addEventListener(eventName, eventListener)
-}
-
-const generateEventHandler = (el, originalListener) => {
-  return (e) => {
-    if (e.target === el) {
-      originalListener.apply(this, e)
+    if (lastSameEvents.length > 0) {
+      removeEvent(el, eventName)
     }
+
+    eventCache.get(el).push({
+      eventName,
+      eventListener: listener
+    })
+  } else {
+    eventCache.set(el, [{
+      eventName,
+      eventListener: listener
+    }])
   }
+
+  el.addEventListener(eventName, listener)
 }

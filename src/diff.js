@@ -73,9 +73,6 @@ function diffAttrs(oldProps, newProps, currentNodePatches) {
 
   // 查找修改、删除
   for (let key in oldProps) {
-    if (isEventName(key) && newProps.hasOwnProperty(key)) { // 不处理事件监听函数
-      continue
-    }
     if (oldProps[key] !== newProps[key]) {
       diffResult[key] = newProps[key]
       count += 1

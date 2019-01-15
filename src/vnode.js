@@ -1,4 +1,3 @@
-import { isFunction } from './is'
 import { setAttr } from './core/attr'
 import _ from './utils'
 
@@ -61,6 +60,10 @@ export class VNode {
   compare(otherNode) {
     return otherNode instanceof VNode ? otherNode.type === this.type && otherNode.key === this.key : false
   }
+
+  original() {
+    return new VNode(this.type, this.props, this.children)
+  }
 }
 
 /**
@@ -70,8 +73,5 @@ export class VNode {
  * @return {VNode}
  */
 export default function vnode(type, props, ...children) {
-  if (isFunction(type)) {
-    return type.call(type.name, props)
-  }
   return new VNode(type, props, _.flatArr(children))
 }

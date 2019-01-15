@@ -12,6 +12,12 @@ export default function render(element, targetDOM) {
   if (element instanceof VNode) {
     const rendered = element.render()
     targetDOM.appendChild(rendered)
+    subscribe(() => {
+      const newElement = element.original()
+      const patches = diff(element, newElement)
+      patch(rendered, patches)
+      element = newElement
+    })
     return
   }
   throw new Error('render method need a VNode element but received ' + element + ' !')

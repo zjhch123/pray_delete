@@ -1,28 +1,12 @@
 
 const listeners = []
 
-let prevRootVNode = null
-
-function onStateChange() {
+export function onStateChange() {
   listeners.forEach(listener => {
-
+    listener()
   })
 }
 
-function stateDispatcher(defaultValue) {
-  return defaultValue
-}
-
-function generateStateDispatcherHandler() {
-  return () => {}
-}
-
-export function useState(defaultValue) {
-  console.log(this)
-  return [ stateDispatcher(defaultValue), generateStateDispatcherHandler() ]
-}
-
-export function subscribe(element, listener) {
-  prevRootVNode = element
+export function subscribe(listener) {
   listeners.push(listener)
 }
